@@ -224,7 +224,7 @@ namespace AudioLight
 
         public string GetJson()
         {
-            return "{r:" + r.ToString("000") + ",g:" + g.ToString("000") + ",b:" + b.ToString("000") + "}";
+            return "{\"r\":" + r + ",\"g\":" + g + ",\"b\":" + b + "}";
         }
 
         public System.Drawing.Color GetSystemColor()

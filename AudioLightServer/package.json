@@ -1,0 +1,25 @@
+{
+  "name": "raspi_node",
+  "version": "0.0.1",
+  "description": "test",
+  "main": "Server.js",
+  "dependencies": {
+    "socketio": "^0.3.0",
+    "pigpio": "^0.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "install": "node ./scripts/install.js",
+    "test": "mocha test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kasperki/AudioLight"
+  },
+  "keywords": [
+    "node",
+    "raspi"
+  ],
+  "author": "https://twitter.com/Kassu27",
+  "license": "MIT"
+}

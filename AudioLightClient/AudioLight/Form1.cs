@@ -1,16 +1,23 @@
-﻿using System;
+﻿using Quobject.SocketIoClientDotNet.Client;
+using System;
 using System.Drawing;
-using System.Timers;
 using System.Windows.Forms;
 
 namespace AudioLight
 {
     public partial class Form1 : Form
     {
+        //Sound
+        private SoundCapture soundCapture;
+
+        //Connection
+        private Socket socket;
+        private const string CONNECTION_URL = "http://192.168.1.57";
+        private const int CONNECTION_PORT = 8080;
+
+        //Drawing
         private float screenWidth { get { return this.Width; } }
         private float screenHeight { get { return this.Height; } }
-
-        private SoundCapture soundCapture;
 
         private Brush brushWhite;
         private Pen whitePen;
@@ -29,6 +36,13 @@ namespace AudioLight
 
             brushWhite = new SolidBrush(System.Drawing.Color.White);
             whitePen = new Pen(brushWhite, 3);
+
+            socket = IO.Socket(CONNECTION_URL + ":" + CONNECTION_PORT);
+            socket.On(Socket.EVENT_CONNECT, () =>
+            {
+                socket.Emit("connection", "AudioLightClient");
+
+            });
         }
 
         private void InitWindowProperties()
@@ -42,6 +56,7 @@ namespace AudioLight
         private void Render(object sender, EventArgs e)
         {
             this.Invalidate();
+            socket.Emit("colorData", soundCapture.GetColorString());
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
