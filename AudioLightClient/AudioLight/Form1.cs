@@ -1,5 +1,6 @@
-﻿using Quobject.SocketIoClientDotNet.Client;
+﻿using CommandLine;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -7,13 +8,28 @@ namespace AudioLight
 {
     public partial class Form1 : Form
     {
+        private const string TITLE = "AudioLight - K³";
+
         //Sound
         private SoundCapture soundCapture;
 
         //Connection
-        private Socket socket;
-        private const string CONNECTION_URL = "http://192.168.1.57";
-        private const int CONNECTION_PORT = 8080;
+        private delegate void SendColorData(string json);
+        private SendColorData sendColorData;
+        private delegate void CloseConnection();
+        private CloseConnection closeConnection;
+
+        private ConnectionOptions connectionOptions;
+        class ConnectionOptions
+        {
+            [Option('i', "ip", Required = false,
+              HelpText = "Websocket IP address")]
+            public string IP { get; set; }
+
+            [Option('s', "serial", Required = false,
+              HelpText = "SerialPort to open")]
+            public string SerialPort { get; set; }
+        }
 
         //Drawing
         private float screenWidth { get { return this.Width; } }
@@ -26,6 +42,13 @@ namespace AudioLight
         private Point[] points = new Point[(int)PointsLength];
         private Point[] points2 = new Point[(int)PointsLength];
 
+        //ConnectionMethods
+        //SerialPort - PRIMARY
+        private SerialPortConnection serialPortConnection;
+
+        //WebSocket - SECONDARY
+        private WebSocketConnection webSocketConnction;
+
         public Form1()
         {
             InitializeComponent();
@@ -37,18 +60,50 @@ namespace AudioLight
             brushWhite = new SolidBrush(System.Drawing.Color.White);
             whitePen = new Pen(brushWhite, 3);
 
-            socket = IO.Socket(CONNECTION_URL + ":" + CONNECTION_PORT);
-            socket.On(Socket.EVENT_CONNECT, () =>
-            {
-                socket.Emit("connection", "AudioLightClient");
+            //Get options
+            connectionOptions = new ConnectionOptions();
+            Parser.Default.ParseArgumentsStrict(Environment.GetCommandLineArgs(), connectionOptions);
 
+            //Try connect with serialport
+            SetSerialConnection();
+        }
+
+        private void SetSerialConnection()
+        {
+            serialPortConnection = new SerialPortConnection();
+            serialPortConnection.OnFailedConnection += new EventHandler<EventArgs>(SerialConnectionFailed);
+            serialPortConnection.OnConnectionOpened += new EventHandler<EventArgs>((object sender, EventArgs e) => {
+                this.Text = TITLE + " Serial Connection";
+                sendColorData = serialPortConnection.Write;
+                closeConnection = serialPortConnection.Close;
             });
+
+            serialPortConnection.OpenConnection(connectionOptions.SerialPort);
+        }
+
+        public void SerialConnectionFailed(object sender, EventArgs e)
+        {
+            SetWebSocketConnection();
+        }
+
+        private void SetWebSocketConnection()
+        {
+            webSocketConnction = new WebSocketConnection();
+            webSocketConnction.OnFailedConnection += new EventHandler<EventArgs>((object s, EventArgs ev) =>
+            {
+                this.Text = TITLE + "  - no connection available";
+            });
+            webSocketConnction.OnConnectionOpened += new EventHandler<EventArgs>((object s, EventArgs ev) =>
+            {
+                this.Text = TITLE + " Websocket Connection";
+            });
+
+            webSocketConnction.OpenConnection(connectionOptions.IP);
         }
 
         private void InitWindowProperties()
         {
-            this.Name = "Form";
-            this.Text = "AudioLight - K³";
+            this.Text = TITLE;
             this.TransparencyKey = System.Drawing.Color.Pink;
             this.BackColor = System.Drawing.Color.Pink;
         }
@@ -56,7 +111,7 @@ namespace AudioLight
         private void Render(object sender, EventArgs e)
         {
             this.Invalidate();
-            socket.Emit("colorData", soundCapture.GetColorString());
+            sendColorData?.Invoke(soundCapture.GetColorString());
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -83,6 +138,7 @@ namespace AudioLight
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             soundCapture.StopSoundCapture();
+            closeConnection?.Invoke();
         }
     }
 }

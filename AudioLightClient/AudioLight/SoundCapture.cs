@@ -114,20 +114,27 @@ namespace AudioLight
         //Based on Spectrum
         private void CalculateColors()
         {
-            color.R -= 75;
-            color.R += spectrumHeight[0];
-            color.R += spectrumHeight[1];
+            color.R = 0;
+            if (spectrumHeight[0] > 15)
+                color.R += spectrumHeight[0];
+            if (spectrumHeight[1] > 25)
+                color.R += spectrumHeight[1];
 
-            color.G -= 150;
-            for (int i = 2; i < 6; i++)
+            int estoG = 12;
+            if (color.R < 20) estoG = 0;
+
+            color.G -= 25;
+            for (int i = 3; i < 6; i++)
             {
-                color.G += spectrumHeight[i];
+                if (spectrumHeight[i] > estoG)
+                    color.G += spectrumHeight[i];
             }
 
-            color.B -= 150;
+            color.B -= 25;
             for (int i = 6; i < 20; i++)
             {
-                color.B += spectrumHeight[i];
+                if (spectrumHeight[i] > 1)
+                    color.B += spectrumHeight[i];
             }
         }
 
