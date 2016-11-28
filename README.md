@@ -1,9 +1,18 @@
 # AudioLight
-Captures audio from windows audio input and turns into light to rasperry pi.
+
+Turns Audio to light.
+
+## How it works.
+
+C# Client uses NAudio (Windows Audio Session API wrapper) it captures audio from your soundcard as stereomix and turns into json formatted rgb light with clumsy algorithm :).
+Node Server listens SerialPort and Websocket for connection.
+When NodeServer has no connection it will cycle leds in idle state.
+If it has connection it will show the colors based on the json data.
+AudioLight C# client first tries to connect with USB, if it's unable then tries to connect with Websocket.
 
 # Installation prequistes
 
-You need rasperry pi, with node & npm.
+You need rasperry pi, with NodeJS & npm.
 Windows vista or later.
 
 ## rasperry
@@ -18,15 +27,23 @@ sudo make install
 ```
 
 ```
+cd AudioLightServer
 npm install
 ```
 
-Red led to pin 4,
-Green led to pin 17,
-Blue led to pin 27;
+Red led to pin GPIO 4,
+Green led to pin GPIO 17,
+Blue led to pin GPIO 27;
 
 run node Server.js
 
-## windows sound input
-You might need to modify the connection ip address: CONNECTION_URL;
-Just run the program and it will send the data to your rasperry pi.
+## windows
+If you don't use SerialPort (USB) then you most propably need to modify the IP address of you pi.
+Just run the program and it will try to send the data to your rasperry pi.
+
+Commandline run arguments:
+
+-p: SerialPort (Default:COM3)
+
+-i: IP address (Default:http://myiplocalnetworkipv4:8080)
+

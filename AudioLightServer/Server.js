@@ -17,6 +17,7 @@ var server = http.createServer(function(request, response) {
     response.writeHead(404);
     response.end();
 });
+
 server.listen(8080, function() {
     console.log((new Date()) + ' Server is listening on port 8080');
 });
@@ -28,32 +29,31 @@ io.on('connection', function(socket) {
     console.log("someone connected! :)"); //TODO check that it is our program, if not kick it.
 
     //STOP IDLE INTERVAL
-    idleInterval.stop();
+    clearInterval(idleInterval);
 
+    //OnDataReceived
     socket.on('colorData', function(data) {
-        var color = JSON.parse(data); //TODO make method
-        console.log("r:" + color.r + " g:" + color.g + " b:" + color.b);
+        //TODO make method
+        var color = JSON.parse(data); 
 
         ledR.pwmWrite(color.r);
         ledG.pwmWrite(color.g);
         ledB.pwmWrite(color.b);
     });
-});
 
-//OnDisconnected
-io.on('disconnected', function(socket) {
-    io.of('/').clients(function(error, clients){
-        if (error) throw error;
-        if (clients.length == 0) {
-            idleInterval = setInterval(function(){ cycleLeds(); }, 100);
-        }
+    //OnDisconnected
+    socket.once('disconnect', function () {
+        idleInterval = setInterval(function(){ cycleLeds(); }, 100);
     });
 });
+
 
 //SerialPort connection ***************************************************************************
 
 //SerialOnConnection
 //SerialOnDisconnection
+
+// Cycle idle leds **************************************
 
 var r = 0, g = 0, b = 0, startTime;
 
@@ -89,8 +89,6 @@ var cycleLeds = function()
     {
         startTime = date.getTime() / 1000;
     }
-
-    console.log("time:" + time + " r:" + r, " g:" + g + " b:" + b);
 
     r = parseInt(r); r = Math.max(0, r); r = Math.min(255, r);
     g = parseInt(g); g = Math.max(0, g); g = Math.min(255, g);

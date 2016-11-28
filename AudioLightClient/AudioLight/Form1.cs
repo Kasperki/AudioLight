@@ -61,7 +61,7 @@ namespace AudioLight
             whitePen = new Pen(brushWhite, 3);
 
             //Get options
-            connectionOptions = new ConnectionOptions();
+            connectionOptions = new ConnectionOptions(); 
             Parser.Default.ParseArgumentsStrict(Environment.GetCommandLineArgs(), connectionOptions);
 
             //Try connect with serialport
@@ -96,6 +96,8 @@ namespace AudioLight
             webSocketConnction.OnConnectionOpened += new EventHandler<EventArgs>((object s, EventArgs ev) =>
             {
                 this.Text = TITLE + " Websocket Connection";
+                sendColorData = webSocketConnction.Write;
+                closeConnection = webSocketConnction.Close;
             });
 
             webSocketConnction.OpenConnection(connectionOptions.IP);
