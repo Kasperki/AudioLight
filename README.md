@@ -47,3 +47,7 @@ Commandline run arguments:
 
 -i: IP address (Default:http://myiplocalnetworkipv4:8080)
 
+# TODO
+
+* SerialPort connection
+* Improve Audio to Light algorithm
