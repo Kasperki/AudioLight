@@ -4,7 +4,7 @@
   "description": "test",
   "main": "Server.js",
   "dependencies": {
-    "socketio": "^0.3.0",
+    "socketio": "^1.0.0",
     "pigpio": "^0.4.0"
   },
   "devDependencies": {},
